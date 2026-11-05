@@ -1,3 +1,7 @@
+from qiskit import transpile
+import warnings
+from scipy.sparse import SparseEfficiencyWarning
+warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector, partial_trace, entropy
@@ -15,12 +19,15 @@ def compile_ising(n, edges, h, gamma):
     return SparsePauliOp.from_sparse_list(terms, num_qubits=n).simplify()
 
 
-def evolve(H, t, steps, init_ones=(), order=2):
+def evolve(H, t, steps, init_ones=(), order=2, unroll=True):
     qc = QuantumCircuit(H.num_qubits)
     for q in init_ones:
-        qc.x(q)  # seed defaults/evaders
+        qc.x(q)
     synth = LieTrotter(reps=steps) if order == 1 else SuzukiTrotter(order=order, reps=steps)
     qc.append(PauliEvolutionGate(H, time=t, synthesis=synth), range(H.num_qubits))
+    if unroll:
+        qc = transpile(qc, basis_gates=["rx", "rz", "rzz", "x", "cx"],
+                optimization_level=0)
     return qc
 
 
