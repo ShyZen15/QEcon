@@ -1,0 +1,21 @@
+{
+  "max_abs_gap_circuit_vs_exact": 0.0015676567550906295,
+  "coherent_energy_start": -3.9702289932583006,
+  "coherent_energy_max_drift": 2.886579864025407e-14,
+  "coherent_seeded_agent_z_final": -0.7023128002565563,
+  "coherent_seeded_agent_z_max": -0.6644966369794397,
+  "coherent_average_z_range": [
+    0.47255594446606725,
+    0.6666666666666666
+  ],
+  "glauber": {
+    "1.0": {
+      "final_average": 0.7955,
+      "final_seeded_agent": 0.834
+    },
+    "2.5": {
+      "final_average": 0.011333333333333334,
+      "final_seeded_agent": 0.1125
+    }
+  }
+}
