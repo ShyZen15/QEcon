@@ -21,7 +21,7 @@ python -m qecon run specs/banks.yaml --exact --baseline   # + exact overlay, + n
 python -m qecon run specs/banks.yaml --set "fields.bailout.nodes=[0]" --name bailout
 python -m qecon run specs/firms.yaml --set fields.money_growth=20
 python -m qecon.figures                                   # all slide figures -> figures/, results/ (~3 min)
-python -m pytest tests -q                                 # 27 tests
+python -m pytest -q                                      # every test in the repo (plugins, integration, validation)
 ```
 
 ## Presets
@@ -52,7 +52,7 @@ Slider keys: `fields.money_growth` (firms), `fields.vat_change` (firms), `fields
 
 **Speed:** ≈0.1 s (firms, taxpayers) to ≈1 s (banks) per run. `simulation.dt` fixes the Trotter step size: the gap between time points is split into m = ⌈gap/dt⌉ steps, so t_k uses k·m steps. The circuit for t_k is then the circuit for t_(k−1) plus m identical steps, and `run_spec` simulates the same circuits block by block (`method="incremental"`, the default with a local backend). `tests/test_plugins.py::test_incremental_equals_engine` checks it against one-circuit-per-time through the engine's estimator (`method="engine"`) to 1e-10. Every shipped spec is within 1e-2 of exact evolution out to t_max (also tested).
 
-### Result shape (`results/*.json`)
+### Result shape (`run_spec` output, also saved as `results/*.json` for slides)
 
 ```
 preset, name, headline, headline_label, states {"0": "solvent", "1": "insolvent"}
@@ -72,13 +72,19 @@ baseline/excess (if --baseline)  same model with the shock removed, and shocked 
 spec, sources, warnings, runtime_s
 ```
 
-## For Shiven
+## Cross-checks with the validation suite
 
-`specs/banks.yaml` is the real bank network for rechecking Trotter error / Γ = 0 on a non-grid graph:
+`tests/test_integration.py` runs Shiven's independent machinery on the real presets:
+- each preset's Hamiltonian equals `validation.reference.hamiltonian` (NumPy only, no Qiskit) to 1e-12;
+- circuit evolution matches the independent exact evolution to < 1e-2, and our exact path matches it to 1e-10;
+- first order = second order on every Z-basis observable (finding 5), which is why the specs use `order: 1`;
+- on the bank network the seed's core neighbours rise > 0.2 above the no-seed background, and the effect weakens with distance (finding 10).
+
+To feed a preset into your own code:
 ```python
 from qecon.api import prepare
 plugin, spec, _ = prepare("specs/banks.yaml")
-n, edges, h, gamma = plugin.system()          # feed straight into compile_ising
+n, edges, h, gamma = plugin.system()          # straight into compile_ising
 init_ones = plugin.init_ones()                # (1,)  Core-B starts failed
 ```
 

@@ -64,9 +64,9 @@ Speaker notes (30 s): "We always compare against the no-shock baseline. The tran
 - ❌ That inter-agent entanglement is empirically real. It's a correlation diagnostic of our model; quantum-cognition evidence is single-agent and contested (Boyer-Kassem et al. 2016).
 - ❌ Estimated parameters. Network structure and policy directions are sourced; absolute scales (κ, β, Γ) are calibration knobs.
 - ⚠️ Real exposure is directed. A Hermitian ZZ coupling is symmetric, so we use (A_ij + A_ji)/2.
-- ⚠️ Coherent dynamics is reversible: cascades oscillate and partially un-spread. We report peaks and time-averages.
+- ⚠️ Coherent dynamics conserves energy and never settles to an equilibrium, so a cascade can partially un-spread. We report peaks and time-averages, against a no-shock baseline.
 
-✅ **What we do claim:** a working compiler, validated against exact evolution (Trotter error < 1e-2 on every preset); circuits that scale linearly in interactions while exact simulation needs 16·2ⁿ bytes *for this coherent model*.
+✅ **What we do claim:** a working compiler, validated against exact evolution (Trotter error < 1e-2 on every preset); circuits that scale linearly in interactions while exact simulation needs 16·2ⁿ bytes *for this coherent model*; every preset's Hamiltonian matches Shiven's independent NumPy build to 1e-12.
 
 ---
 

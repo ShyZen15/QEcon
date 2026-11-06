@@ -78,8 +78,9 @@ def main(argv=None):
         print(f"max |Trotter - exact| on {key}: {result['trotter_max_error']:.2e}")
     if "baseline" in result:
         b = result["baseline"]["series"][key]
-        print(f"baseline (no shock) {key}: peak {max(b):.3f};  "
-              f"time-avg excess due to shock {sum(result['excess']['series'][key]) / len(b):+.3f}")
+        what = ", ".join(result["baseline"]["overrides"])
+        print(f"baseline ({what}) {key}: peak {max(b):.3f}, min {min(b):.3f};  "
+              f"time-avg difference vs baseline {sum(result['excess']['series'][key]) / len(b):+.3f}")
     if not args.no_plot:
         from .plots import plot_result
         print("wrote", plot_result(result, jpath[:-5] + ".png"))

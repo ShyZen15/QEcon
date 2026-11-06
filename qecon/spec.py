@@ -16,7 +16,7 @@ import yaml
 COMMON_DEFAULTS = {
     "uncertainty": {"gamma": 0.5},
     "initial": {"ones": []},
-    "simulation": {"t_max": 4.0, "n_times": 21, "steps": 12, "order": 2, "backend": "local"},
+    "simulation": {"t_max": 4.0, "n_times": 21, "steps": 12, "order": 1, "backend": "local"},
     "sources": {},
 }
 

@@ -3,11 +3,11 @@
 ## Run the demo
 
 ```bash
-pip install -r requirements-demo.txt
+pip install -r requirements.txt
 python -m demo.server                # from the repo root -> http://localhost:8501
 ```
 
-A small standard-library server (`demo/server.py`) wraps `qecon.api.run_spec` in a JSON API. The front end (`demo/web/`: plain HTML, CSS and hand-drawn SVG, no frameworks, no CDN) works fully offline. Everything runs on the local statevector simulator, so it can't fail on stage. A lever move takes about 0.3–0.7 s, cached after the first time.
+A small standard-library server (`demo/server.py`) wraps `qecon.api.run_spec` in a JSON API. The front end (`demo/web/`: plain HTML, CSS and hand-drawn SVG, no frameworks, no CDN) works fully offline. Everything runs on the local statevector simulator, so it can't fail on stage. A lever move takes about 0.3–0.7 s (each run also computes the exact reference and the counterfactual), cached after the first time.
 
 | Area | What it shows |
 |---|---|
@@ -33,7 +33,7 @@ Counterfactuals: banks → no-shock background, plus "same shock, no bailout" wh
 
 ## Hardware (lottery ticket, not a dependency)
 
-The demo overlays any `results/hardware/*.json` whose spec hash matches the current levers (i.e. the defaults), and silently skips otherwise.
+The demo overlays any `results/hardware/*.json` whose *physics* fingerprint (`qecon.api.physics_hash`: agents, network, fields, Γ, initial state) matches the current levers, i.e. the defaults, and silently skips otherwise. Simulator settings such as Trotter order don't affect the match. A test (`tests/test_integration.py`) fails if the cached run ever stops matching the default bank spec.
 
 ```bash
 # 0. one-time: save your IBM Quantum token yourself (never commit it)
@@ -52,7 +52,7 @@ python -m backends.hardware fetch results/hardware/banks_core_periphery_8_ibm_bo
 
 Defaults: t = 0.5, 1.0, 1.5, 2.0; first-order Trotter, 1 step per 0.5 time units; 4096 shots; TREX + ZNE, dynamical decoupling, gate twirling. **One Estimator job, 4 circuits**, well inside the free 10-minute window.
 
-Use **banks** for hardware: 8 qubits, 27–109 two-qubit gates after transpiling for FakeBoston (≈72% signal kept at the deepest circuit). Firms (12 qubits) needs 74–316 two-qubit gates, and that few Trotter steps is already far from exact, so it's not worth the queue.
+Use **banks** for hardware: 8 qubits, 27–115 two-qubit gates after transpiling for FakeBoston (transpiler seeded, so the counts are reproducible; ≈71% signal kept at the deepest circuit). Firms (12 qubits) needs 74–316 two-qubit gates, and that few Trotter steps is already far from exact, so it's not worth the queue.
 
 The fetched JSON also stores `ideal_same_circuit` (noiseless value of the *same shallow* circuit) and `exact`. Then on stage you can separate hardware noise (device vs ideal) from Trotter error (ideal vs exact).
 
@@ -60,9 +60,9 @@ Fake-backend rehearsal for banks (`results/hardware/banks_core_periphery_8_FakeB
 
 | t | steps | 2q gates | 2q depth | noisy sim | ideal (same circuit) | exact |
 |---|---|---|---|---|---|---|
-| 0.5 | 1 | 27 | 21 | 0.190 | 0.190 | 0.184 |
-| 1.0 | 2 | 57 | 46 | 0.311 | 0.307 | 0.296 |
-| 1.5 | 3 | 77 | 57 | 0.396 | 0.396 | 0.381 |
-| 2.0 | 4 | 109 | 62 | 0.418 | 0.410 | 0.394 |
+| 0.5 | 1 | 27 | 18 | 0.194 | 0.190 | 0.184 |
+| 1.0 | 2 | 58 | 47 | 0.304 | 0.307 | 0.296 |
+| 1.5 | 3 | 85 | 67 | 0.401 | 0.396 | 0.381 |
+| 2.0 | 4 | 115 | 90 | 0.415 | 0.410 | 0.394 |
 
 Notes: `qiskit_ibm_runtime.EstimatorV2` is deprecated since 0.50 (removal ≥ 3 months later) in favour of the client-side `executor_estimator.Estimator`; it still works on 0.51. Check the `save_account` channel/instance arguments against the current docs.

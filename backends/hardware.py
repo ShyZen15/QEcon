@@ -26,7 +26,6 @@ first order, 1 step per 0.5 time units.
 """
 import argparse
 import datetime as dt
-import hashlib
 import json
 import math
 import os
@@ -39,15 +38,9 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from core.engine import evolve  # noqa: E402
-from qecon.api import exact_series, prepare  # noqa: E402
+from qecon.api import exact_series, physics_hash, prepare  # noqa: E402
 
 HW_DIR = os.path.join(ROOT, "results", "hardware")
-
-
-def spec_hash(spec):
-    """Same hash as demo/app.py, so the app can match hardware points to slider settings."""
-    clean = {k: v for k, v in spec.items() if not k.startswith("_")}
-    return hashlib.sha1(json.dumps(clean, sort_keys=True).encode()).hexdigest()[:12]
 
 
 def get_device(name):
@@ -72,7 +65,7 @@ def build(spec_path, overrides, times, dt_hw, order):
 
 def transpile_all(circuits, obs, device):
     from qiskit.transpiler import generate_preset_pass_manager
-    pm = generate_preset_pass_manager(optimization_level=3, backend=device)
+    pm = generate_preset_pass_manager(optimization_level=3, backend=device, seed_transpiler=7)  # reproducible gate counts
     pubs, stats = [], []
     for qc in circuits:
         isa = pm.run(qc)
@@ -117,7 +110,7 @@ def package(plugin, spec, times, steps, evs, stds, stats, device_name, kind, ord
     std_M = np.array(stds)[:, 0]
     sign = 1 if plugin.headline_from_zero else -1
     return {
-        "preset": spec["preset"], "name": spec.get("name"), "spec_hash": spec_hash(spec),
+        "preset": spec["preset"], "name": spec.get("name"), "spec_hash": physics_hash(spec),
         "kind": kind, "backend": device_name, "job_id": job_id,
         "created": dt.datetime.now().isoformat(timespec="seconds"),
         "times": list(map(float, times)), "trotter_steps": steps, "order": order,

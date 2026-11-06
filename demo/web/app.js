@@ -537,7 +537,7 @@ function renderModel(D) {
   add("couplings", `${s.edges}`, "ZZ terms");
   add("exact memory", humanBytes(s.statevector_bytes), "16 · 2ⁿ bytes: doubles with every agent");
   add("gates / step", `~${s.cx_per_step} CX`, "linear in couplings, before routing");
-  add("Trotter steps", `${s.trotter_steps_at_t_max}`, `second order, at t = ${D.times[D.times.length - 1]}`);
+  add("Trotter steps", `${s.trotter_steps_at_t_max}`, `first order (= second order for these observables), at t = ${D.times[D.times.length - 1]}`);
   if (D.r.trotter_max_error !== undefined) add("max error", D.r.trotter_max_error.toExponential(1), "circuit vs exact matrix exponential");
   for (const d of S.resp.hardware || []) add("device run", d.backend, `${d.kind}; ${(d.circuit_stats || []).map((x) => x.two_qubit_gates).join(" / ")} two-qubit gates`);
   const src = $("#sources");

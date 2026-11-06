@@ -23,6 +23,18 @@ from .spec import apply_overrides, load_spec, validate
 EXACT_MAX_AGENTS = 16
 
 
+PHYSICS_KEYS = ("preset", "agents", "network", "fields", "uncertainty", "initial")
+
+
+def physics_hash(spec):
+    """Fingerprint of the MODEL (who, links, fields, Gamma, initial state), ignoring
+    simulator settings, names and sources. Used to match cached hardware runs to the
+    demo's current levers, so changing e.g. Trotter order doesn't orphan them."""
+    import hashlib
+    core = {k: spec.get(k) for k in PHYSICS_KEYS}
+    return hashlib.sha1(json.dumps(core, sort_keys=True).encode()).hexdigest()[:12]
+
+
 def prepare(spec_or_path, overrides=None):
     """Load + override + validate. Returns (plugin, spec, warnings). No circuits yet."""
     spec = load_spec(spec_or_path) if isinstance(spec_or_path, (str, os.PathLike)) \

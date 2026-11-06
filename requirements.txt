@@ -1,0 +1,12 @@
+# Everything: engine, validation, presets, CLI, demo server, hardware adapter, tests.
+# (validation/requirements.txt keeps the exact pins the validation figures were made with.)
+qiskit==2.6.2
+qiskit-aer==0.18.2
+qiskit-ibm-runtime==0.51.0
+numpy
+scipy
+matplotlib
+networkx
+pyyaml
+pytest
+ipykernel

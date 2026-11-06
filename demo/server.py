@@ -8,7 +8,6 @@ simulator, so the demo cannot fail on stage. Hardware points (results/hardware/*
 are attached to a run when their spec hash matches the current settings.
 """
 import argparse
-import hashlib
 import json
 import mimetypes
 import os
@@ -24,7 +23,7 @@ if ROOT not in sys.path:
 
 import yaml  # noqa: E402
 
-from qecon.api import run_spec  # noqa: E402
+from qecon.api import physics_hash, run_spec  # noqa: E402
 from qecon.spec import SpecError, load_spec  # noqa: E402
 
 WEB = os.path.join(ROOT, "demo", "web")
@@ -32,11 +31,6 @@ HW_DIR = os.path.join(ROOT, "results", "hardware")
 SPECS = {"banks": "specs/banks.yaml", "firms": "specs/firms.yaml",
          "taxpayers": "specs/taxpayers.yaml"}
 _lock = threading.Lock()     # qiskit/numpy are fine threaded, but keep runs serial & cached
-
-
-def spec_hash(spec):
-    clean = {k: v for k, v in spec.items() if not k.startswith("_")}
-    return hashlib.sha1(json.dumps(clean, sort_keys=True).encode()).hexdigest()[:12]
 
 
 def base_spec(preset):
@@ -60,7 +54,7 @@ def counterfactual_overrides(preset, overrides):
 def _run(preset, overrides_key, exact):
     overrides = list(json.loads(overrides_key))
     r = run_spec(base_spec(preset), overrides=overrides, baseline=True, exact=exact)
-    r["spec_hash"] = spec_hash(r["spec"])
+    r["spec_hash"] = physics_hash(r["spec"])
     return r
 
 
