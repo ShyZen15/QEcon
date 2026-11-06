@@ -1,5 +1,7 @@
 # QEcon: economic policy as a quantum Hamiltonian
 
+**Live app:** https://qecon-q.streamlit.app
+
 QEcon compiles an economic interaction network into a transverse-field Ising Hamiltonian and simulates its coherent dynamics with Qiskit Trotter circuits:
 
 ```

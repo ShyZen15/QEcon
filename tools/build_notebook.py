@@ -18,8 +18,8 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "QEcon_submission.ipynb"
 BUILD = "qecon_src"
-REPO_URL = "https://github.com/ShyZen15/Quantum-larpers"
-APP_URL = None    # set this to the Streamlit URL once the app is deployed
+REPO_URL = "https://github.com/ShyZen15/QEcon"
+APP_URL = "https://qecon-q.streamlit.app"
 
 HARDWARE_RESULT = "results/hardware/banks_core_periphery_8_FakeBoston.json"
 

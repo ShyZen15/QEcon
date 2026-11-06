@@ -9,11 +9,14 @@ There are two frontends over one backend. Both call `demo.server.api_run`, so le
 
 ## Deploy to Streamlit Community Cloud
 
+**Live app:** https://qecon-q.streamlit.app. It redeploys by itself when `master` changes. To set it up again:
+
 1. Sign in at [share.streamlit.io](https://share.streamlit.io) with the GitHub account that administers this repo.
 2. Choose **Create app**, then deploy from the repo.
-3. Set the repository to `ShyZen15/Quantum-larpers`, pick the branch, and set the main file path to `demo/streamlit_app.py`.
-4. Under **Advanced settings**, choose Python 3.13 if it's offered. That's the version this was tested on.
-5. Press **Deploy**.
+3. Set the repository to `ShyZen15/QEcon`, the branch to `master`, and the main file path to `demo/streamlit_app.py`.
+4. Set the app URL to `qecon-q`, which gives `qecon-q.streamlit.app`.
+5. Under **Advanced settings**, choose Python 3.13 if it's offered. That's the version this was tested on.
+6. Press **Deploy**.
 
 Cloud reads `demo/requirements.txt` first because it sits next to the entrypoint, so it installs only what the app needs. `.streamlit/config.toml` stays at the repo root, as Cloud requires.
 

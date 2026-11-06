@@ -52,7 +52,7 @@ def headline_chart(r, rc=None, rc_label=None, hw=(), baseline_label="baseline"):
     fig.update_xaxes(title="time (units of 1/J)")
     fig.update_traces(hovertemplate="t = %{x:.2f}<br>%{y:.1%}")
     return _layout(fig, r["headline_label"], hovermode="x unified",
-                   legend=dict(orientation="h", y=-0.22, x=0))
+                   legend=dict(orientation="h", y=-0.32, x=0))
 
 
 def _sorted(r):
@@ -88,14 +88,18 @@ def network_chart(r):
             x=[pos[i, 0], pos[j, 0]], y=[pos[i, 1], pos[j, 1]], mode="lines",
             line=dict(color=AXIS, width=1 + 4 * J / jmax), hoverinfo="skip", showlegend=False))
 
+    # Grids are dense, so they get smaller nodes and just the coordinates as labels.
+    names = [x.replace("Firm ", "").replace("Taxpayer ", "") for x in r["labels"]]
+    node_size = 34 if g["n"] <= 8 else 24
+
     def nodes(k):
         return go.Scatter(
-            x=pos[:, 0], y=pos[:, 1], mode="markers+text", text=r["labels"],
+            x=pos[:, 0], y=pos[:, 1], mode="markers+text", text=names,
             textposition="top center", textfont=dict(size=11, color=INK2),
             customdata=np.stack([P[k], g["h"]], axis=1),
             hovertemplate="%{text}<br>P(" + r["states"]["1"] + ") = %{customdata[0]:.1%}"
                           "<br>h = %{customdata[1]:.2f}<extra></extra>",
-            marker=dict(size=34, color=P[k], cmin=0, cmax=1, colorscale=RAMP,
+            marker=dict(size=node_size, color=P[k], cmin=0, cmax=1, colorscale=RAMP,
                         line=dict(color=[INK if i in g["init_ones"] else SURFACE
                                          for i in range(g["n"])], width=2.5),
                         colorbar=dict(title=f"P({r['states']['1']})", tickformat=".0%",
