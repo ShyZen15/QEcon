@@ -129,13 +129,17 @@ class EconPlugin(Plugin):
         n, edges, _, _ = self.system()
         sim = self.spec["simulation"]
         qc = evolve(self.hamiltonian(), 1.0, 1, (), sim["order"])
-        rzz = qc.count_ops().get("rzz", 0)
+        ops = qc.count_ops()
+        # Qiskit emits RZZ normally, but CX+RZ when all terms commute (Gamma = 0):
+        # count every two-qubit gate in CX units (RZZ = CX . RZ . CX).
+        rzz = ops.get("rzz", 0)
+        cx_equiv = 2 * rzz + sum(ops.get(g, 0) for g in ("cx", "cz", "ecr"))
         return {
             "n": n,
             "edges": len(edges),
             "statevector_bytes": 16 * 2 ** n,
             "rzz_per_step": int(rzz),
-            "cx_per_step": int(2 * rzz),          # each RZZ = CX . RZ . CX
+            "cx_per_step": int(cx_equiv),
             "order": sim["order"],
         }
 

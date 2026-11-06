@@ -145,6 +145,23 @@ def test_trotter_matches_exact(name):
     assert r["trotter_max_error"] < 1e-2
 
 
+@pytest.mark.parametrize("name", list(REGISTRY))
+def test_incremental_equals_engine(name):
+    """Block-by-block statevector == one circuit per time through the estimator."""
+    ov = ["simulation.n_times=5", "simulation.t_max=2.0", "simulation.dt=0.25"]
+    a = run_spec(SPECS[name], overrides=ov, method="engine")
+    b = run_spec(SPECS[name], overrides=ov, method="incremental")
+    assert np.allclose(a["per_agent"]["p_one"], b["per_agent"]["p_one"], atol=1e-10)
+    assert a["summary"]["trotter_steps_at_t_max"] == 8
+
+
+@pytest.mark.parametrize("name", list(REGISTRY))
+def test_shipped_specs_accurate_over_full_run(name):
+    """Default spec resolution: Trotter vs exact headline error < 1e-2 out to t_max."""
+    r = run_spec(SPECS[name], exact=True)
+    assert r["trotter_max_error"] < 1e-2
+
+
 def test_init_state_seed_is_failed():
     r = run_spec(SPECS["banks"], overrides=FAST)
     p0 = r["per_agent"]["p_one"][0]

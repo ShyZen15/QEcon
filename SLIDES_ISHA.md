@@ -10,8 +10,10 @@
 6. Why quantum: the memory wall *(Shiven)*
 7. How we know it's right: Trotter convergence + Γ = 0 *(Shiven)*
 8. **What we do NOT claim** *(team; Isha writes it)*
-9. Live demo *(Arsh)*: sliders → network colours; hardware points if the JSON exists
-10. References *(Isha: from `CITATIONS.md`)*
+9. Policy you can play with *(Arsh, slide C, see `SLIDES_ARSH.md`)*
+10. Toward hardware *(Arsh, slide D)*
+11. Live demo *(Arsh)*: script in `README_DEMO.md`
+12. References *(Isha: from `CITATIONS.md`)*
 
 ---
 

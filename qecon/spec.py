@@ -215,7 +215,10 @@ def validate(spec):
 
     check.number("simulation.t_max", lo=0)
     check.integer("simulation.n_times", lo=2)
-    check.integer("simulation.steps", lo=1)
+    if check.get("simulation.dt", None) is not None:
+        check.number("simulation.dt", lo=0, strict=True)
+    else:
+        check.integer("simulation.steps", lo=1)
     order = check.get("simulation.order")
     if order not in (1, 2):
         err("simulation.order", f"must be 1 (Lie-Trotter) or 2 (Suzuki-Trotter), got {order!r}")

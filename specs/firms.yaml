@@ -41,7 +41,7 @@ initial:
 simulation:
   t_max: 6.0
   n_times: 25
-  steps: 16
+  dt: 0.125            # Trotter step size (each circuit uses ceil steps so step <= dt)
   order: 2
   backend: local
 

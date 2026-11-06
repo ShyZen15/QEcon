@@ -50,7 +50,7 @@ except SpecError as e:
 
 Slider keys: `fields.money_growth` (firms), `fields.vat_change` (firms), `fields.bailout.nodes` (banks, e.g. `[0]`), `fields.shock.nodes` (banks), `uncertainty.gamma` (all), `fields.audit_prob` (taxpayers).
 
-**Speed:** banks (8 agents) ≈ 7 s and firms (12 agents) ≈ 15 s with the default 25 time points × 16 Trotter steps. For a snappier slider use `overrides=["simulation.n_times=13"]`. Precomputed runs are in `results/*.json`, so the app can load those instantly and only re-run on demand.
+**Speed:** ≈0.1 s (firms, taxpayers) to ≈1 s (banks) per run. `simulation.dt` fixes the Trotter step size: the gap between time points is split into m = ⌈gap/dt⌉ steps, so t_k uses k·m steps. The circuit for t_k is then the circuit for t_(k−1) plus m identical steps, and `run_spec` simulates the same circuits block by block (`method="incremental"`, the default with a local backend). `tests/test_plugins.py::test_incremental_equals_engine` checks it against one-circuit-per-time through the engine's estimator (`method="engine"`) to 1e-10. Every shipped spec is within 1e-2 of exact evolution out to t_max (also tested).
 
 ### Result shape (`results/*.json`)
 

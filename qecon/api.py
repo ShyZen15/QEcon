@@ -8,13 +8,14 @@ The returned dict is JSON-serializable (see RESULT SHAPE in README_PLUGINS.md).
 """
 import copy
 import json
+import math
 import os
 import time
 
 import numpy as np
 from qiskit.quantum_info import Statevector
 
-from core.engine import exact_state
+from core.engine import evolve, exact_state, get_estimator
 from plugins import REGISTRY
 
 from .spec import apply_overrides, load_spec, validate
@@ -43,15 +44,69 @@ def exact_series(plugin, times):
     return np.array(rows)
 
 
-def run_spec(spec_or_path, backend=None, overrides=None, exact=False, baseline=False):
+def trotter_schedule(sim, times):
+    """Trotter steps for each time point.
+
+    With simulation.dt (preferred): the gap between time points is split into
+    m = ceil(gap / dt) steps, and time t_k gets k*m steps. Every circuit then has
+    the same step size (<= dt), so late times are not under-resolved, AND the circuit
+    for t_k is exactly the circuit for t_(k-1) followed by m more identical steps.
+    Without dt: the legacy fixed simulation.steps for every time.
+    Returns (steps_per_time, m or None)."""
+    if sim.get("dt"):
+        gap = float(times[1] - times[0])
+        m = max(1, math.ceil(gap / float(sim["dt"]) - 1e-9))
+        return [k * m for k in range(len(times))], m
+    return [int(sim["steps"])] * len(times), None
+
+
+def simulate_engine(plugin, times, steps, order, backend):
+    """One circuit per time (Snigdha's evolve), one batched estimator call."""
+    H = plugin.hamiltonian()
+    obs = plugin.observables(plugin.system()[0])
+    circuits = [evolve(H, float(t), max(1, s), plugin.init_ones(), order)
+                for t, s in zip(times, steps)]
+    res = get_estimator(backend).run([(qc, obs) for qc in circuits]).result()
+    return np.vstack([np.atleast_1d(r.data.evs) for r in res])
+
+
+def simulate_incremental(plugin, times, m, order):
+    """The SAME Trotter circuits, simulated block by block: the state at t_k is the
+    state at t_(k-1) pushed through one block evolve(H, gap, m). Identical to
+    simulate_engine (tested to 1e-10) but ~T/2 times cheaper. Statevector only."""
+    H = plugin.hamiltonian()
+    n = plugin.system()[0]
+    obs = plugin.observables(n)
+    gap = float(times[1] - times[0])
+    block = evolve(H, gap, m, (), order)
+    psi = Statevector.from_int(sum(1 << q for q in plugin.init_ones()), 2 ** n)
+    rows = []
+    for k in range(len(times)):
+        if k:
+            psi = psi.evolve(block)
+        rows.append([float(psi.expectation_value(o).real) for o in obs])
+    return np.array(rows)
+
+
+def run_spec(spec_or_path, backend=None, overrides=None, exact=False, baseline=False,
+             method="auto"):
+    """method: 'engine' (one circuit per time through the estimator), 'incremental'
+    (same circuits, block-by-block statevector; needs simulation.dt and a local
+    backend), or 'auto' (incremental when possible)."""
     t0 = time.perf_counter()
     plugin, spec, warns = prepare(spec_or_path, overrides)
     sim = spec["simulation"]
     times = np.linspace(0.0, float(sim["t_max"]), int(sim["n_times"]))
-
-    raw = plugin.run(times, steps=int(sim["steps"]), backend=backend or sim["backend"],
-                     order=int(sim["order"]))
-    evs = np.vstack([np.atleast_1d(r) for r in raw])
+    backend = backend or sim["backend"]
+    steps, m = trotter_schedule(sim, times)
+    if method == "auto":
+        method = "incremental" if (m is not None and backend == "local") else "engine"
+    if method == "incremental":
+        if m is None:
+            raise ValueError("incremental simulation needs simulation.dt")
+        evs = simulate_incremental(plugin, times, m, int(sim["order"]))
+    else:
+        evs = simulate_engine(plugin, times, steps, int(sim["order"]), backend)
     out = plugin.interpret(times, evs)
 
     n, edges, h, gamma = plugin.system()
@@ -74,7 +129,9 @@ def run_spec(spec_or_path, backend=None, overrides=None, exact=False, baseline=F
             "positions": {str(k): v for k, v in plugin.positions().items()},
             "distance_from_seed": plugin.distance_from_seed(),
         },
-        "summary": plugin.gate_summary(),
+        "summary": {**plugin.gate_summary(), "method": method,
+                    "trotter_steps_at_t_max": int(steps[-1]),
+                    "trotter_dt": float(times[-1] / steps[-1]) if steps[-1] else None},
         "warnings": warns,
         "sources": spec.get("sources", {}),
         "spec": {k: v for k, v in spec.items() if not k.startswith("_")},
@@ -86,7 +143,7 @@ def run_spec(spec_or_path, backend=None, overrides=None, exact=False, baseline=F
             np.array(out["series"][plugin.headline]) - np.array(ex["series"][plugin.headline]))))
     if baseline:
         base = run_spec(result["spec"], backend=backend,
-                        overrides=plugin.baseline_overrides())
+                        overrides=plugin.baseline_overrides(), method=method)
         key = plugin.headline
         result["baseline"] = {"series": base["series"], "per_agent": base["per_agent"],
                               "overrides": plugin.baseline_overrides()}
