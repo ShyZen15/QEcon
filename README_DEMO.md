@@ -11,16 +11,14 @@ A small standard-library server (`demo/server.py`) wraps `qecon.api.run_spec` in
 
 | Area | What it shows |
 |---|---|
-| Top bar | the three scenarios (Contagion · Inflation · Compliance) and engine status (qubits, runtime) |
-| Lever rail | the policy levers for the scenario; each shows its value and the Hamiltonian term it edits (e.g. `h = 0.05 × (CET1 − 7%)`). The Γ lever sits in its own "quantum term" card |
-| Headline | one sentence rewritten from the numbers on every run ("Bailing out Core-A holds peak insolvency to 37%, down from 45%…") |
-| Stats | peak, effect vs the counterfactual, most-exposed agent / propagation speed / neighbour agreement, policy effect |
-| Chart | current policy vs counterfactual vs background, exact evolution (dotted), device points (diamonds); end labels; hover crosshair |
-| Network | node colour = P(state 1) at the current time, % inside the node, ring = shocked agent, dashed = bailed out |
-| Clock | one scrubber (▶, or Space / ← →) drives the chart cursor, the network and the light-cone together |
-| Light-cone | agents × time heatmaps, sorted by distance from the shock, current policy next to the comparison |
-| Under the hood | the Hamiltonian, term-by-term mapping, cost (qubits, 16·2ⁿ memory, gates/step), accuracy (max error vs exact), sources |
-| Spec sheet | "View spec" opens the YAML; edit it and press **Validate & run**, and every validator error is listed |
+| Top bar | scenario switch (Contagion · Inflation · Compliance), engine status, **light/dark toggle** (remembered; defaults to the system setting) |
+| Lever rail | the levers for the scenario, grouped (Shock / Policy / Uncertainty). **Show terms** reveals the Hamiltonian term each lever edits, e.g. `h = 0.05 × (CET1 − 7%)` |
+| Headline + stats | one sentence rewritten from the numbers on every run, then four stat cards (peak, effect vs the counterfactual, most exposed / propagation speed, policy effect) |
+| View bar | **Dynamics · Light-cone · Model** tabs, plus the shared clock (▶, scrubber; Space / ← → on the keyboard) |
+| Dynamics | the time chart (current vs counterfactual vs background, exact dotted, device diamonds) next to the network (colour and % = P(state 1) at the clock time) |
+| Light-cone | agents × time heatmaps sorted by distance from the shock, current policy next to the comparison |
+| Model | the Hamiltonian and term-by-term mapping; cost (qubits, 16·2ⁿ memory, gates/step) and accuracy; sources |
+| View spec | the YAML in a side sheet; edit it, then **Validate & run** lists every validator error |
 
 Counterfactuals: banks → no-shock background, plus "same shock, no bailout" when a bank is bailed out; firms → money growth on target; taxpayers → no evader cluster.
 

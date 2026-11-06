@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QEcon: policy as a quantum Hamiltonian</title>
+<script>
+  // set the theme before first paint (no flash)
+  (function () {
+    var t = localStorage.getItem("qecon-theme");
+    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -11,21 +19,34 @@
 
 <header class="topbar">
   <div class="brand">
-    <span class="mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="6" cy="12" r="3.2"/><circle cx="18" cy="6" r="3.2"/><circle cx="18" cy="18" r="3.2"/><path d="M8.8 10.6 15.2 7.4M8.8 13.4l6.4 3.2M18 9.2v5.6"/></svg>
-    </span>
+    <svg class="mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="6" cy="12" r="3.2"/><circle cx="18" cy="6" r="3.2"/><circle cx="18" cy="18" r="3.2"/><path d="M8.8 10.6 15.2 7.4M8.8 13.4l6.4 3.2M18 9.2v5.6"/></svg>
     <span class="wordmark">QEcon</span>
-    <span class="tagline">Policy as a quantum Hamiltonian</span>
   </div>
-  <nav class="scenarios" id="scenarios" role="tablist"></nav>
-  <div class="engine" id="engine">connecting…</div>
+  <nav class="segmented scenarios" id="scenarios" role="tablist" aria-label="Scenario"></nav>
+  <div class="top-right">
+    <span class="engine" id="engine">connecting…</span>
+    <button class="icon-btn" id="theme" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+    </button>
+  </div>
 </header>
 
 <div class="layout">
-  <aside class="levers" id="levers" aria-label="Policy levers"></aside>
+  <aside class="rail" aria-label="Policy levers">
+    <div class="rail-head">
+      <span class="rail-title">Levers</span>
+      <label class="switch"><input type="checkbox" id="show-terms"><span class="track"></span>Show terms</label>
+    </div>
+    <div id="levers"></div>
+    <div class="rail-foot">
+      <button class="btn" id="reset">Reset</button>
+      <button class="btn" id="open-spec">View spec</button>
+    </div>
+  </aside>
 
-  <main class="stage" id="stage">
-    <section class="lede">
+  <main class="main" id="main">
+    <section class="intro">
       <p class="kicker" id="kicker"></p>
       <h1 class="headline" id="headline">&nbsp;</h1>
       <p class="dek" id="dek"></p>
@@ -33,65 +54,70 @@
 
     <section class="stats" id="stats"></section>
 
-    <section class="figures">
-      <figure class="fig fig-chart">
-        <figcaption>
-          <span class="fig-title" id="chart-title"></span>
-          <span class="legend" id="chart-legend"></span>
-        </figcaption>
-        <div class="chart" id="chart"></div>
-      </figure>
-      <figure class="fig fig-network">
-        <figcaption>
-          <span class="fig-title" id="net-title">The network</span>
-          <span class="ramp-legend" id="net-legend"></span>
-        </figcaption>
-        <div class="network" id="network"></div>
-      </figure>
-    </section>
-
-    <section class="scrubber">
-      <button class="play" id="play" aria-label="Play">
-        <svg viewBox="0 0 16 16" width="14" height="14" id="play-icon"><path d="M4 2.5v11l9-5.5z"/></svg>
-      </button>
-      <input type="range" id="time" min="0" max="1" step="1" value="0" aria-label="Time">
-      <span class="time-readout" id="time-readout">t = 0.00</span>
-      <span class="scrub-hint">one clock drives the chart, the network and the light-cone</span>
-    </section>
-
-    <section class="cone">
-      <div class="section-head">
-        <h2>Light-cone</h2>
-        <p>Each row is an agent, ordered by how many links separate it from the shock. Colour is the probability it has flipped.</p>
+    <div class="viewbar">
+      <nav class="segmented views" id="views" role="tablist" aria-label="View">
+        <button data-v="dynamics" aria-selected="true">Dynamics</button>
+        <button data-v="cone" aria-selected="false">Light-cone</button>
+        <button data-v="model" aria-selected="false">Model</button>
+      </nav>
+      <div class="clock">
+        <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" width="12" height="12" id="play-icon"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+        <input type="range" id="time" min="0" max="1" step="1" value="0" aria-label="Time">
+        <span class="time-readout" id="time-readout">t = 0.00</span>
       </div>
-      <div class="cone-grid" id="cone"></div>
+    </div>
+
+    <section class="view" id="view-dynamics">
+      <div class="grid-2">
+        <article class="card">
+          <header class="card-head">
+            <h2 id="chart-title">Over time</h2>
+            <div class="legend" id="chart-legend"></div>
+          </header>
+          <div class="chart" id="chart"></div>
+        </article>
+        <article class="card">
+          <header class="card-head">
+            <h2 id="net-title">Network</h2>
+            <div class="ramp-legend" id="net-legend"></div>
+          </header>
+          <div class="network" id="network"></div>
+          <p class="card-foot" id="net-foot"></p>
+        </article>
+      </div>
     </section>
 
-    <section class="hood">
-      <div class="section-head">
-        <h2>Under the hood</h2>
-        <p>Every lever is one term of one Hamiltonian, compiled to a Trotter circuit and simulated exactly on a statevector.</p>
-      </div>
-      <div class="hood-grid">
-        <div class="hood-col">
-          <h3>The Hamiltonian</h3>
-          <div class="formula">H = <span class="t-j">−Σ J<sub>ij</sub> Z<sub>i</sub>Z<sub>j</sub></span> <span class="t-h">−Σ h<sub>i</sub> Z<sub>i</sub></span> <span class="t-g">−Σ Γ<sub>i</sub> X<sub>i</sub></span></div>
-          <dl class="mapping" id="mapping"></dl>
-        </div>
-        <div class="hood-col">
-          <h3>Cost &amp; accuracy</h3>
-          <dl class="facts" id="facts"></dl>
-        </div>
-        <div class="hood-col">
-          <h3>Sources</h3>
+    <section class="view" id="view-cone" hidden>
+      <article class="card">
+        <header class="card-head">
+          <h2>Light-cone</h2>
+          <div class="ramp-legend" id="cone-legend"></div>
+        </header>
+        <p class="card-sub">Rows are agents, ordered by how many links separate them from the shock. Colour is the probability each has flipped. Hover any cell.</p>
+        <div class="cone-grid" id="cone"></div>
+      </article>
+    </section>
+
+    <section class="view" id="view-model" hidden>
+      <div class="grid-3">
+        <article class="card">
+          <header class="card-head"><h2>The Hamiltonian</h2></header>
+          <div class="formula">H = −Σ J<sub>ij</sub> Z<sub>i</sub>Z<sub>j</sub> − Σ h<sub>i</sub> Z<sub>i</sub> <span class="q">− Σ Γ<sub>i</sub> X<sub>i</sub></span></div>
+          <dl class="kv" id="mapping"></dl>
+        </article>
+        <article class="card">
+          <header class="card-head"><h2>Cost &amp; accuracy</h2></header>
+          <dl class="kv facts" id="facts"></dl>
+        </article>
+        <article class="card">
+          <header class="card-head"><h2>Sources</h2></header>
           <ul class="sources" id="sources"></ul>
-          <button class="ghost" id="open-spec">Open the spec ↗</button>
-        </div>
+        </article>
       </div>
     </section>
 
     <footer class="colophon">
-      QEcon · Qiskit 2.6 · statevector simulation of second-order Suzuki–Trotter circuits. A stylised, quantum-like model: no forecasting claim, no speedup claim over classical econophysics.
+      Statevector simulation of second-order Suzuki–Trotter circuits (Qiskit 2.6). A stylised, quantum-like model: no forecasting claim, no speedup claim over classical econophysics.
     </footer>
   </main>
 </div>
@@ -105,13 +131,13 @@
         <p class="kicker">Domain spec</p>
         <h2 id="sheet-title">The YAML behind this scenario</h2>
       </div>
-      <button class="ghost close" id="close-spec" aria-label="Close">✕</button>
+      <button class="icon-btn" id="close-spec" aria-label="Close">✕</button>
     </div>
-    <p class="sheet-note">Every lever edits a line of this file, and every number carries a source comment. Break something and press validate: the validator reports every problem before anything expensive runs.</p>
+    <p class="sheet-note">Every lever edits a line of this file, and every number carries a source comment. Break something and validate: every problem is reported before anything expensive runs.</p>
     <textarea id="yaml" spellcheck="false"></textarea>
     <div class="sheet-actions">
-      <button class="solid" id="run-yaml">Validate &amp; run</button>
-      <button class="ghost" id="reset-yaml">Reset</button>
+      <button class="btn primary" id="run-yaml">Validate &amp; run</button>
+      <button class="btn" id="reset-yaml">Reset</button>
     </div>
     <div class="validator" id="validator"></div>
   </div>
