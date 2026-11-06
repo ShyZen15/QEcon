@@ -1,0 +1,79 @@
+# Interbank contagion: 8 banks, core-periphery.
+# Run:   python -m qecon run specs/banks.yaml
+# Story: money-center bank Core-B fails. Does it take down the rest of the core?
+#        Then bail out Core-A:          --set fields.bailout.nodes=[0]
+#        Or ring-fence its dependents:  --set fields.bailout.nodes=[5,6]
+#        Contagion vs pure noise:       add --baseline (same model, no shock)
+#
+# Convention: |0> = solvent, |1> = insolvent.  h > 0 favours solvent.
+preset: banks
+name: banks_core_periphery_8
+
+agents:
+  n: 8
+  # Core-periphery tiering: a few money-center banks lend to each other and to many
+  # small banks. Craig & von Peter (2014), "Interbank tiering and money center banks",
+  # Journal of Financial Intermediation 23(3). Values below are illustrative, not real banks.
+  labels: [Core-A, Core-B, Core-C, Peri-1, Peri-2, Peri-3, Peri-4, Peri-5]
+
+network:
+  # Cross-holdings C[holder, issuer] = fraction of issuer held by holder.
+  # Elliott, Golub & Jackson (2014), "Financial Networks and Contagion", AER 104(10):
+  # dependency A = C_hat (I - C)^-1. We use J_ij = (A_ij + A_ji)/2, scaled so max J = J_scale.
+  # Every column must sum to < 1 (outside shareholders own the rest).
+  holdings:          # [holder, issuer, fraction]
+    - [0, 1, 0.15]   # core <-> core
+    - [1, 0, 0.15]
+    - [0, 2, 0.15]
+    - [2, 0, 0.15]
+    - [1, 2, 0.15]
+    - [2, 1, 0.15]
+    - [0, 3, 0.20]   # core holds periphery
+    - [0, 4, 0.20]
+    - [1, 5, 0.20]
+    - [1, 6, 0.20]
+    - [2, 7, 0.20]
+    - [0, 7, 0.10]
+    - [3, 0, 0.05]   # periphery holds a little of its core bank
+    - [4, 0, 0.05]
+    - [5, 1, 0.05]
+    - [6, 1, 0.05]
+    - [7, 2, 0.05]
+  J_scale: 1.0       # energy unit: strongest dependency = 1
+  # (I - C)^-1 adds indirect paths (20 nonzero pairs). Keeping couplings >= 20% of the
+  # max leaves the 9 direct relationships -> fewer gates, still has a core triangle.
+  min_coupling: 0.2
+
+fields:
+  # CET1 capital ratio, % of risk-weighted assets (illustrative).
+  capital_buffer: [13.5, 12.0, 14.0, 9.0, 8.5, 8.0, 9.5, 10.0]
+  # Basel III: 4.5% CET1 minimum + 2.5% capital conservation buffer = 7%
+  # (BCBS, "Basel III: A global regulatory framework for more resilient banks", 2010, rev. 2011)
+  regulatory_min: 7.0
+  # h_i = kappa * (buffer_i - regulatory_min). Calibration knob (not estimated):
+  # chosen (by exact-evolution scan) so contagion is visible above the Gamma-driven noise.
+  kappa: 0.05
+  # The seeded bank's capital is wiped out: h = -strength keeps it insolvent.
+  shock: {nodes: [1], strength: 2.0}
+  # Bailout = extra solvency field on chosen banks (external control field, as in
+  # Tomar et al., arXiv:2609.17415, 2026 preprint). Try nodes: [0] (Core-A).
+  bailout: {nodes: [], strength: 2.0}
+
+uncertainty:
+  gamma: 0.6         # liquidity / rollover uncertainty (transverse field)
+
+initial:
+  ones: [1]          # Core-B starts insolvent
+
+simulation:
+  t_max: 6.0
+  n_times: 25
+  steps: 16
+  order: 2
+  backend: local
+
+sources:
+  network: "Elliott, Golub & Jackson (2014), AER 104(10); Ising/QUBO mapping: Tomar et al., arXiv:2609.17415 (2026 preprint)"
+  structure: "Craig & von Peter (2014), J. Financial Intermediation 23(3)"
+  buffers: "Basel III, BCBS (2010, rev. 2011): 4.5% CET1 + 2.5% conservation buffer"
+  scales: "kappa, J_scale, gamma are dimensionless calibration knobs"

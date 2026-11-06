@@ -1,0 +1,43 @@
+# Tax compliance (quantum version of the Zaklan Ising model).
+# Run:   python -m qecon run specs/taxpayers.yaml
+# Knobs: --set fields.audit_prob=0.2   --set fields.tax_rate=40
+#
+# Convention: |0> = comply, |1> = evade.  h > 0 favours complying.
+preset: taxpayers
+name: taxpayers_grid_4x3
+
+agents:
+  grid: [4, 3]         # 2D lattice, as in Zaklan et al. (they used 20x20 and up, classically)
+
+network:
+  # Social influence / conditional cooperation (Gächter; Frey & Torgler).
+  # Zaklan, Westerhoff & Stauffer (2009), "Analysing tax evasion dynamics via the Ising
+  # model", J. Economic Interaction and Coordination 4.
+  J: 1.0
+
+fields:
+  # h = morale + enforcement * audit_prob * penalty - tax_burden * (tax_rate - ref_rate)
+  morale: 0.2          # baseline tax morale
+  audit_prob: 0.05     # Zaklan's p
+  penalty: 10          # Zaklan's k (periods of forced honesty). Folded into a static field here.
+  enforcement: 1.0     # calibration knob
+  tax_rate: 30.0       # %
+  ref_rate: 30.0       # % rate at which the tax-burden term is zero
+  tax_burden: 0.05     # calibration knob
+
+uncertainty:
+  gamma: 0.5           # ambivalence
+
+initial:
+  ones: [0, 1, 4]      # a cluster of evaders in the corner
+
+simulation:
+  t_max: 6.0
+  n_times: 25
+  steps: 16
+  order: 2
+  backend: local
+
+sources:
+  model: "Zaklan, Westerhoff & Stauffer (2009), J. Econ. Interact. Coord. 4"
+  scales: "morale, enforcement, tax_burden, gamma are dimensionless calibration knobs"

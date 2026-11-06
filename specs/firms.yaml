@@ -1,0 +1,51 @@
+# Price-setting firms on a 2D supply grid: inflation expectations under a money shock.
+# Run:   python -m qecon run specs/firms.yaml
+# Slider: --set fields.money_growth=20      (2 = on target, 20 = big expansion)
+#
+# Convention: |0> = hold price, |1> = raise price.  h > 0 favours holding.
+preset: firms
+name: firms_grid_4x3
+
+agents:
+  # 4 x 3 grid = 12 firms, 17 supplier links. 2D on purpose: the 1D transverse-field
+  # Ising chain is free-fermion solvable; 2D + a longitudinal field is not.
+  grid: [4, 3]
+
+network:
+  # Strategic complementarity in pricing: raise if your neighbours raise.
+  # Cooper & John (1988), "Coordinating Coordination Failures in Keynesian Models", QJE 103(3);
+  # Ball & Romer (1991), "Sticky Prices as Coordination Failure", AER 81(3).
+  J: 1.0
+
+fields:
+  # h = anchor*credibility - beta*(money_growth - target) - tau*vat_change + disorder
+  credibility: 0.8     # 0..1: how anchored expectations are (central-bank credibility)
+  anchor: 1.0
+  money_growth: 12.0   # % per year  <-- THE SLIDER
+  target: 2.0          # % (2% inflation-target convention)
+  beta: 0.1            # h per pp of excess money growth. Calibration knob: 10pp excess = J
+  vat_change: 0.0      # pp change in VAT/sales tax: cost-push, tilts toward raising
+  tau: 0.05            # calibration knob
+  # Heterogeneous firms = random-field Ising model, Bouchaud (2013),
+  # "Crises and collective socio-economic phenomena", J. Stat. Phys. 151.
+  disorder: {sigma: 0.1, seed: 7}
+
+uncertainty:
+  # uncertainty about rivals' pricing (transverse field). 0.8 chosen by exact scan:
+  # at 0.5 firms barely move until money growth > 20%.
+  gamma: 0.8
+
+initial:
+  ones: []             # every firm starts holding (anchored); the money shock is the quench
+
+simulation:
+  t_max: 6.0
+  n_times: 25
+  steps: 16
+  order: 2
+  backend: local
+
+sources:
+  coupling: "Cooper & John (1988), QJE 103(3); Ball & Romer (1991), AER 81(3)"
+  disorder: "Bouchaud (2013), J. Stat. Phys. 151:567-606 (random-field Ising model)"
+  scales: "anchor, beta, tau, gamma are dimensionless calibration knobs"
