@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QEcon: policy as a quantum Hamiltonian</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="6" cy="12" r="3.2"/><circle cx="18" cy="6" r="3.2"/><circle cx="18" cy="18" r="3.2"/><path d="M8.8 10.6 15.2 7.4M8.8 13.4l6.4 3.2M18 9.2v5.6"/></svg>
+    </span>
+    <span class="wordmark">QEcon</span>
+    <span class="tagline">Policy as a quantum Hamiltonian</span>
+  </div>
+  <nav class="scenarios" id="scenarios" role="tablist"></nav>
+  <div class="engine" id="engine">connecting…</div>
+</header>
+
+<div class="layout">
+  <aside class="levers" id="levers" aria-label="Policy levers"></aside>
+
+  <main class="stage" id="stage">
+    <section class="lede">
+      <p class="kicker" id="kicker"></p>
+      <h1 class="headline" id="headline">&nbsp;</h1>
+      <p class="dek" id="dek"></p>
+    </section>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="figures">
+      <figure class="fig fig-chart">
+        <figcaption>
+          <span class="fig-title" id="chart-title"></span>
+          <span class="legend" id="chart-legend"></span>
+        </figcaption>
+        <div class="chart" id="chart"></div>
+      </figure>
+      <figure class="fig fig-network">
+        <figcaption>
+          <span class="fig-title" id="net-title">The network</span>
+          <span class="ramp-legend" id="net-legend"></span>
+        </figcaption>
+        <div class="network" id="network"></div>
+      </figure>
+    </section>
+
+    <section class="scrubber">
+      <button class="play" id="play" aria-label="Play">
+        <svg viewBox="0 0 16 16" width="14" height="14" id="play-icon"><path d="M4 2.5v11l9-5.5z"/></svg>
+      </button>
+      <input type="range" id="time" min="0" max="1" step="1" value="0" aria-label="Time">
+      <span class="time-readout" id="time-readout">t = 0.00</span>
+      <span class="scrub-hint">one clock drives the chart, the network and the light-cone</span>
+    </section>
+
+    <section class="cone">
+      <div class="section-head">
+        <h2>Light-cone</h2>
+        <p>Each row is an agent, ordered by how many links separate it from the shock. Colour is the probability it has flipped.</p>
+      </div>
+      <div class="cone-grid" id="cone"></div>
+    </section>
+
+    <section class="hood">
+      <div class="section-head">
+        <h2>Under the hood</h2>
+        <p>Every lever is one term of one Hamiltonian, compiled to a Trotter circuit and simulated exactly on a statevector.</p>
+      </div>
+      <div class="hood-grid">
+        <div class="hood-col">
+          <h3>The Hamiltonian</h3>
+          <div class="formula">H = <span class="t-j">−Σ J<sub>ij</sub> Z<sub>i</sub>Z<sub>j</sub></span> <span class="t-h">−Σ h<sub>i</sub> Z<sub>i</sub></span> <span class="t-g">−Σ Γ<sub>i</sub> X<sub>i</sub></span></div>
+          <dl class="mapping" id="mapping"></dl>
+        </div>
+        <div class="hood-col">
+          <h3>Cost &amp; accuracy</h3>
+          <dl class="facts" id="facts"></dl>
+        </div>
+        <div class="hood-col">
+          <h3>Sources</h3>
+          <ul class="sources" id="sources"></ul>
+          <button class="ghost" id="open-spec">Open the spec ↗</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="colophon">
+      QEcon · Qiskit 2.6 · statevector simulation of second-order Suzuki–Trotter circuits. A stylised, quantum-like model: no forecasting claim, no speedup claim over classical econophysics.
+    </footer>
+  </main>
+</div>
+
+<div class="tooltip" id="tooltip" role="status"></div>
+
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-panel" role="dialog" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <div>
+        <p class="kicker">Domain spec</p>
+        <h2 id="sheet-title">The YAML behind this scenario</h2>
+      </div>
+      <button class="ghost close" id="close-spec" aria-label="Close">✕</button>
+    </div>
+    <p class="sheet-note">Every lever edits a line of this file, and every number carries a source comment. Break something and press validate: the validator reports every problem before anything expensive runs.</p>
+    <textarea id="yaml" spellcheck="false"></textarea>
+    <div class="sheet-actions">
+      <button class="solid" id="run-yaml">Validate &amp; run</button>
+      <button class="ghost" id="reset-yaml">Reset</button>
+    </div>
+    <div class="validator" id="validator"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

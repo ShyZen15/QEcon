@@ -1,4 +1,4 @@
-# Everything needed for the presets, CLI, demo app and hardware adapter.
+# Everything needed for the presets, CLI, demo and hardware adapter.
 qiskit==2.6.2
 qiskit-aer==0.18.2
 qiskit-ibm-runtime==0.51.0
@@ -7,6 +7,4 @@ scipy
 matplotlib
 networkx
 pyyaml
-streamlit
-plotly
 pytest

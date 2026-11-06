@@ -105,7 +105,13 @@ class EconPlugin(Plugin):
         G = nx.Graph()
         G.add_nodes_from(range(n))
         G.add_edges_from(edges)
-        return {i: [float(p[0]), float(p[1])] for i, p in nx.spring_layout(G, seed=0).items()}
+        # Kamada-Kawai (graph-distance based) spreads core-periphery structure cleanly;
+        # fall back to a seeded spring layout for disconnected graphs.
+        try:
+            pos = nx.kamada_kawai_layout(G) if nx.is_connected(G) else nx.spring_layout(G, seed=0)
+        except Exception:  # noqa: BLE001
+            pos = nx.spring_layout(G, seed=0)
+        return {i: [float(p[0]), float(p[1])] for i, p in pos.items()}
 
     def graph(self):
         n, edges, _, _ = self.system()

@@ -34,7 +34,7 @@ python -m pytest tests -q                                 # 27 tests
 
 Sign convention everywhere: **h > 0 pushes toward |0⟩** (the good state). Every number in a YAML has a source comment, or is labelled a *calibration knob*.
 
-## For Arsh (Streamlit)
+## For front ends (the demo uses this via demo/server.py)
 
 ```python
 from qecon.api import run_spec
@@ -45,7 +45,7 @@ spec["fields"]["money_growth"] = slider_value          # sliders just mutate the
 try:
     r = run_spec(spec)                                  # or run_spec(spec, overrides=["fields.money_growth=12"])
 except SpecError as e:
-    st.error(str(e))                                    # lists every problem
+    show(str(e))                                        # lists every problem
 ```
 
 Slider keys: `fields.money_growth` (firms), `fields.vat_change` (firms), `fields.bailout.nodes` (banks, e.g. `[0]`), `fields.shock.nodes` (banks), `uncertainty.gamma` (all), `fields.audit_prob` (taxpayers).

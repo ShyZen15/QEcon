@@ -4,9 +4,9 @@
 
 **Title:** Move a policy lever, watch the network respond
 
-**Figure:** screenshot of the app, firms at money growth 20% (grid all blue) next to banks with the Core-A bailout (light-cone side by side).
+**Figure:** screenshot of the demo: Contagion with the Core-A bailout (headline + light-cone pair), or Inflation at 20% money growth.
 
-- Sliders edit the YAML spec → validator → compile → simulate in ~0.1–1 s
+- Levers edit the YAML spec → validator → compile → simulate in ~0.3–0.7 s
 - Network colour = P(raise price / insolvent) per agent, animated over time
 - Every run is shown against a counterfactual (no shock, no bailout, money on target)
 
@@ -37,6 +37,6 @@ Speaker notes (30 s): "We transpile with optimisation level 3 for the device's n
 |---|---|
 | "Is the demo running on a quantum computer?" | "No, on a statevector simulator, on purpose, so it can't fail live. The yellow diamonds are the device / noise-model runs, cached from earlier." |
 | "Can it run on real hardware?" | "Yes at shallow depth: 8 banks, ≤ 109 two-qubit gates for t ≤ 2. Signal decays like e^(−N·ε); at ε ≈ 3e-3 we keep about 70%. Here's the plan output with the transpiled gate counts." |
-| "How fast is it?" | "~0.1 s for 12 firms, ~1 s for 8 banks per slider move. We simulate the identical Trotter circuits block by block instead of rebuilding from t = 0 each time. A test checks it matches the one-circuit-per-time engine to 1e-10." |
+| "How fast is it?" | "About half a second per lever move, including the exact reference and the counterfactual. We simulate the identical Trotter circuits block by block instead of rebuilding from t = 0 each time. A test checks it matches the one-circuit-per-time engine to 1e-10." |
 | "What happens at Γ = 0?" | "Drag it to zero: every term commutes, the curve goes flat, and the app tells you why." |
 | "Why does the bailout only help partly?" | "It pins one bank with a strong field. Contagion can still route through the rest of the network, which the light-cone heatmap shows row by row." |

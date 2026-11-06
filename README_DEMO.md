@@ -4,36 +4,38 @@
 
 ```bash
 pip install -r requirements-demo.txt
-streamlit run demo/app.py            # from the repo root -> http://localhost:8501
+python -m demo.server                # from the repo root -> http://localhost:8501
 ```
 
-The demo runs on the local statevector simulator, so it can't fail on stage. Every slider change re-compiles the Hamiltonian and re-simulates the Trotter circuits (≈0.1 s firms/taxpayers, ≈1 s banks; results are cached).
+A small standard-library server (`demo/server.py`) wraps `qecon.api.run_spec` in a JSON API. The front end (`demo/web/`: plain HTML, CSS and hand-drawn SVG, no frameworks, no CDN) works fully offline. Everything runs on the local statevector simulator, so it can't fail on stage. A lever move takes about 0.3–0.7 s, cached after the first time.
 
-| Panel | What it shows |
+| Area | What it shows |
 |---|---|
-| Sidebar | Economy picker; policy sliders bound to the YAML spec (`fields.*`); Γ slider; toggles for the no-shock baseline, the exact matrix-exponential overlay, and hardware points |
-| Metrics | agents (qubits), ZZ edges, peak of the headline, exact-simulation memory 16·2ⁿ, two-qubit gates per Trotter step, and Δ vs the counterfactual |
-| **Dynamics** | headline curve (current policy vs counterfactual vs exact, plus hardware diamonds if cached); **animated network**: node colour = P(state 1), opens at the peak moment, ▶ Play animates it |
-| **Light-cone** | heatmap, agents sorted by graph distance from the seed × time; side by side with the counterfactual (e.g. without the bailout) |
-| The Hamiltonian | the formula, a table of h_i, Γ_i and starting state per agent, a table of J_ij per edge, and sources |
-| Spec & validator | the live YAML the sliders are editing. Edit it, press **Run spec**; a bad spec shows every validator error at once |
+| Top bar | the three scenarios (Contagion · Inflation · Compliance) and engine status (qubits, runtime) |
+| Lever rail | the policy levers for the scenario; each shows its value and the Hamiltonian term it edits (e.g. `h = 0.05 × (CET1 − 7%)`). The Γ lever sits in its own "quantum term" card |
+| Headline | one sentence rewritten from the numbers on every run ("Bailing out Core-A holds peak insolvency to 37%, down from 45%…") |
+| Stats | peak, effect vs the counterfactual, most-exposed agent / propagation speed / neighbour agreement, policy effect |
+| Chart | current policy vs counterfactual vs background, exact evolution (dotted), device points (diamonds); end labels; hover crosshair |
+| Network | node colour = P(state 1) at the current time, % inside the node, ring = shocked agent, dashed = bailed out |
+| Clock | one scrubber (▶, or Space / ← →) drives the chart cursor, the network and the light-cone together |
+| Light-cone | agents × time heatmaps, sorted by distance from the shock, current policy next to the comparison |
+| Under the hood | the Hamiltonian, term-by-term mapping, cost (qubits, 16·2ⁿ memory, gates/step), accuracy (max error vs exact), sources |
+| Spec sheet | "View spec" opens the YAML; edit it and press **Validate & run**, and every validator error is listed |
 
-Counterfactuals: banks with a bailout → "without the bailout"; firms off-target → "money growth on target, no tax change".
-
-**Windows note:** on laptops with Smart App Control, one of pandas' DLLs can be blocked. The app detects that and runs without pandas, so nothing to do.
+Counterfactuals: banks → no-shock background, plus "same shock, no bailout" when a bank is bailed out; firms → money growth on target; taxpayers → no evader cluster.
 
 ## 3-minute demo script
 
-1. **Banks** (default). *"Core-B, a money-center bank, fails. Blue: share of banks insolvent. Green: the same economy with no shock, i.e. pure Γ-noise. The gap is contagion."* Point at the network: Core-B outlined; Core-A and Core-C going blue.
-2. **Bail out → Core-A.** *"A bailout is just an extra field on one qubit."* Metric shows the peak dropping; orange = without the bailout. Open **Light-cone**: Core-A's row goes white.
-3. **Γ → 0.** *"Turn off the transverse field."* The curves go flat, and the app warns that every term commutes and nothing moves. *"Uncertainty is the engine. Without it this is a classical, frozen model."* Put Γ back to 0.6.
-4. **Firms.** Drag **money growth** 2 → 20 %. *"Expectations stay anchored, then de-anchor abruptly."* The grid turns blue.
-5. **Spec & validator.** *"Every slider edits this YAML; each number has a source comment. Break it…"* (type a bad index) → validator lists the problems.
-6. If hardware JSON exists: back to Banks with default sliders → yellow diamonds on the curve.
+1. **Contagion** (default). Read the headline aloud: *"When Core-B fails, up to 45% of the banking system is insolvent, 2× the background rate."* Point at the green line: *"that's the same economy with no shock, i.e. pure Γ-noise. The gap is contagion."*
+2. **Bail out → Core-A.** The headline rewrites itself. The stats show −8 pts, the network gets a dashed ring, and the light-cone's Core-A row goes pale next to the unchecked one.
+3. **Γ → 0.** *"Turn off the one non-commuting term."* Everything freezes, and the headline says why. *"Uncertainty is the engine."* Put Γ back.
+4. **Inflation.** Drag money growth 2 → 20%: *"anchored… anchored… de-anchored"*. Press ▶ and watch the grid fill in.
+5. **View spec.** *"Every lever edits this file, and every number has a source."* Break an index → Validate & run → the validator lists every problem.
+6. **Under the hood** (scroll): 16·2ⁿ memory vs gates per step, max error vs exact, and the sources.
 
 ## Hardware (lottery ticket, not a dependency)
 
-The app overlays any `results/hardware/*.json` whose spec hash matches the current sliders (default settings), and silently skips otherwise.
+The demo overlays any `results/hardware/*.json` whose spec hash matches the current levers (i.e. the defaults), and silently skips otherwise.
 
 ```bash
 # 0. one-time: save your IBM Quantum token yourself (never commit it)

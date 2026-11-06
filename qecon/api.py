@@ -33,15 +33,22 @@ def prepare(spec_or_path, overrides=None):
 
 
 def exact_series(plugin, times):
-    """Same observables, computed by sparse matrix exponential instead of circuits."""
+    """Same observables, computed by sparse matrix exponential instead of circuits.
+    On a uniform grid, SciPy steps exp(-iHt)|psi0> across all times in one call
+    (same result as core.engine.exact_state at each t, several times faster)."""
+    from scipy.sparse.linalg import expm_multiply
     n = plugin.system()[0]
     H = plugin.hamiltonian()
     obs = [o.to_matrix(sparse=True) for o in plugin.observables(n)]
-    rows = []
-    for t in times:
-        psi = exact_state(H, float(t), plugin.init_ones())
-        rows.append([float(np.real(np.vdot(psi, O @ psi))) for O in obs])
-    return np.array(rows)
+    T = np.asarray(times, dtype=float)
+    uniform = len(T) > 2 and np.allclose(np.diff(T), T[1] - T[0])
+    if uniform:
+        psi0 = Statevector.from_int(sum(1 << q for q in plugin.init_ones()), 2 ** n).data
+        A = (-1j * H.to_matrix(sparse=True)).tocsc()
+        states = expm_multiply(A, psi0, start=T[0], stop=T[-1], num=len(T), endpoint=True)
+    else:
+        states = [exact_state(H, float(t), plugin.init_ones()) for t in T]
+    return np.array([[float(np.real(np.vdot(psi, O @ psi))) for O in obs] for psi in states])
 
 
 def trotter_schedule(sim, times):
