@@ -72,6 +72,8 @@ class EconPlugin(Plugin):
     headline = "fraction_one"                 # name of (1 - <M>)/2 in the output
     headline_label = "Fraction in |1>"
     headline_from_zero = False                # True -> report (1 + <M>)/2 instead
+    extra_fields = ()                         # valid fields keys with no default value
+    extra_network = ()                        # valid network keys with no default value
 
     def __init__(self, spec):
         self.spec = spec

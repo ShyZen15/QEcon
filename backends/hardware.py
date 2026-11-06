@@ -2,8 +2,8 @@
 
 Same spec → same Trotter circuits as the simulator, transpiled for a real device and
 run through the Runtime Estimator with error mitigation. Results are cached as JSON in
-results/hardware/, where the Streamlit app picks them up automatically (matched by a
-hash of the spec, so points only appear when the sliders are at those settings).
+results/hardware/, where both demos pick them up automatically (matched by a
+hash of the spec, so points only appear when the levers are at those settings).
 
 One-time setup (you type the token yourself; it is never stored in this repo):
     python -c "from qiskit_ibm_runtime import QiskitRuntimeService as S; S.save_account(token='...', overwrite=True)"

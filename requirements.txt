@@ -8,5 +8,9 @@ scipy
 matplotlib
 networkx
 pyyaml
+plotly
+streamlit
 pytest
 ipykernel
+nbformat
+nbclient

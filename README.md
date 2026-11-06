@@ -27,14 +27,18 @@ specs/*.yaml ─▶ qecon.spec (validate) ─▶ plugins/*  ─▶ core.engine.c
 ```bash
 pip install -r requirements.txt
 
-python -m demo.server                        # live demo -> http://localhost:8501
+streamlit run demo/streamlit_app.py          # live demo, the same app that deploys to Streamlit
+python -m demo.server                        # hand-built web demo -> http://localhost:8501
 python -m qecon run specs/banks.yaml         # one preset from the command line -> out/*.json + .png
-python -m pytest -q                          # all tests (validation + plugins + integration)
+python -m pytest -q                          # all tests
 python -m qecon.figures                      # preset figures for the deck -> figures/
 python -m validation.run_all                 # validation figures -> validation/figures/
+python tools/build_notebook.py               # rebuild and run QEcon_submission.ipynb
 ```
 
 Run everything from the repo root.
+
+**`QEcon_submission.ipynb` is the whole project in one file.** It embeds every module, spec and test unchanged, so it runs on its own with no repo: open it and use Run All. `tests/test_notebook.py` fails if it drifts from the repo, so rebuild it after changing code.
 
 ## Repository map
 
@@ -43,7 +47,8 @@ Run everything from the repo root.
 | **Engine**: `compile_ising`, `evolve`, `exact_state`, `run_time_series`, `Plugin` base class | `core/engine.py` | `use_it.py`, `plugin_demo.py`, `steps_check.py`, `bench.py` are small worked examples |
 | **Validation**: Trotter convergence, memory wall, entanglement entropy, Glauber Monte Carlo, observable error; NumPy-only reference | `validation/` | `validation/PLAN.md` (findings 1–10), `validation/validation.ipynb` |
 | **Plugins & DSL**: YAML specs, validator, three presets, CLI, `run_spec` API | `plugins/`, `specs/`, `qecon/` | `README_PLUGINS.md`, `CITATIONS.md`, `SLIDES_ISHA.md` |
-| **Demo & hardware**: live web demo; IBM adapter (plan / fake / submit / fetch) | `demo/`, `backends/` | `README_DEMO.md` (includes the 3-minute demo script), `SLIDES_ARSH.md` |
+| **Demo & hardware**: Streamlit app and hand-built web demo (both call `demo.server.api_run`); IBM adapter (plan / fake / submit / fetch) | `demo/`, `backends/` | `README_DEMO.md` (includes the 3-minute demo script and deployment), `SLIDES_ARSH.md` |
+| **Submission**: the whole project as one notebook | `QEcon_submission.ipynb`, `tools/build_notebook.py` | |
 | Tests | `validation/test_engine.py`, `tests/` | `tests/test_integration.py` ties the workstreams together |
 | Outputs | `figures/` and `results/` (presets), `validation/figures/`, `results/hardware/` | |
 
@@ -51,7 +56,7 @@ Run everything from the repo root.
 
 | Scenario | Agents | J (ZZ) | h (Z) | Headline result |
 |---|---|---|---|---|
-| **Contagion** `specs/banks.yaml` | 8 banks, core–periphery, 9 links | symmetrised Elliott–Golub–Jackson dependency | Basel III capital buffer, shock, bailout | When Core-B fails, peak insolvency reaches 45% vs 22% with no shock. Bailing out Core-A cuts its own peak failure from ~47% to ~9%. |
+| **Contagion** `specs/banks.yaml` | 8 banks, core–periphery, 9 links | symmetrised Elliott–Golub–Jackson dependency | Basel III capital buffer, shock, bailout | When Core-B fails, peak insolvency reaches 45% vs 22% with no shock. Bailing out Core-A cuts its own peak failure from ~47% to ~10%. |
 | **Inflation** `specs/firms.yaml` | 12 firms, 4×3 supply grid | strategic complementarity in pricing | credibility, money growth, VAT | Expectations stay anchored, then de-anchor: peak share raising prices ≈5% at 2% money growth, ≈54% at 20%. |
 | **Compliance** `specs/taxpayers.yaml` | 12 taxpayers, 4×3 lattice | social influence (Zaklan model) | tax morale, audit × penalty, tax rate | A 3-evader cluster pulls compliance down to ~70%. More audits raise the floor. |
 

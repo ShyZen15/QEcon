@@ -1,4 +1,4 @@
-"""One function for everything: the CLI and the Streamlit app both call run_spec().
+"""One function for everything: the CLI and both demos call run_spec().
 
     from qecon.api import run_spec
     result = run_spec("specs/banks.yaml")                         # path ...
@@ -18,7 +18,7 @@ from qiskit.quantum_info import Statevector
 from core.engine import evolve, exact_state, get_estimator
 from plugins import REGISTRY
 
-from .spec import apply_overrides, load_spec, validate
+from .spec import SpecError, apply_overrides, load_spec, validate
 
 EXACT_MAX_AGENTS = 16
 
@@ -117,6 +117,9 @@ def run_spec(spec_or_path, backend=None, overrides=None, exact=False, baseline=F
     sim = spec["simulation"]
     times = np.linspace(0.0, float(sim["t_max"]), int(sim["n_times"]))
     backend = backend or sim["backend"]
+    if backend != "local":
+        raise SpecError(f"backend {backend!r} is not available in run_spec: real-hardware "
+                        "runs go through python -m backends.hardware")
     steps, m = trotter_schedule(sim, times)
     if method == "auto":
         method = "incremental" if (m is not None and backend == "local") else "engine"

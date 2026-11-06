@@ -97,7 +97,7 @@ SpecError: 3 problems in specs/banks.yaml
   - initial.ones: 1 listed twice
   - simulation.order: must be 1 (Lie-Trotter) or 2 (Suzuki-Trotter), got 3
 ```
-Errors: unknown preset, wrong types/NaN, wrong lengths, indices out of range, self-holdings, duplicate pairs, cross-holding column sums ≥ 1 (EGJ needs I − C invertible), Γ < 0, bad order/backend, n > 24 (statevector memory 16·2ⁿ bytes).
+Errors: unknown preset, unknown keys (typos get a suggestion), wrong types/NaN, wrong lengths, indices out of range, self-holdings, duplicate pairs, cross-holding column sums ≥ 1 (EGJ needs I − C invertible), Γ < 0, bad order/backend, n > 24 (statevector memory 16·2ⁿ bytes).
 Warnings: Γ = 0 (nothing moves), disconnected graph, 1D chain with h = 0 (free-fermion solvable), n > 16 (slow demo).
 
 ## Findings from calibration (worth knowing on stage)

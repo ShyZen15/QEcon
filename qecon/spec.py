@@ -9,6 +9,7 @@ The validator collects EVERY problem and raises once, before anything expensive
       - initial.ones: 5 listed twice
 """
 import copy
+import difflib
 import math
 
 import yaml
@@ -67,8 +68,34 @@ def apply_overrides(spec, assignments):
         parts = key.strip().split(".")
         for p in parts[:-1]:
             node = node.setdefault(p, {})
+            if not isinstance(node, dict):
+                raise SpecError(f"--set {a!r}: {p} is a single value, so it has no keys")
         node[parts[-1]] = yaml.safe_load(val)
     return spec
+
+
+def unknown_keys(spec, plugin_cls, err):
+    """A typo like fields.kapa would otherwise be ignored and the default used silently."""
+    defaults = plugin_cls.defaults
+    known = {
+        "": {"preset", "name", "agents", "network", "fields", "uncertainty", "initial",
+             "simulation", "sources"},
+        "network": set(defaults.get("network", {})) | set(plugin_cls.extra_network),
+        "fields": set(defaults.get("fields", {})) | set(plugin_cls.extra_fields),
+        "uncertainty": set(COMMON_DEFAULTS["uncertainty"]),
+        "initial": set(COMMON_DEFAULTS["initial"]),
+        "simulation": set(COMMON_DEFAULTS["simulation"]) | {"dt"},
+    }
+    for section, allowed in known.items():
+        node = spec.get(section) if section else spec
+        if not isinstance(node, dict):
+            continue
+        for key in node:
+            if str(key).startswith("_") or key in allowed:
+                continue
+            guess = difflib.get_close_matches(str(key), allowed, n=1)
+            where = f"{section}.{key}" if section else str(key)
+            err(where, "unknown key" + (f" (did you mean {guess[0]}?)" if guess else ""))
 
 
 class Check:
@@ -188,6 +215,7 @@ def validate(spec):
 
     if not isinstance(spec.get("name", preset), str):
         err("name", "must be a string")
+    unknown_keys(spec, plugin_cls, err)
 
     # preset-specific structure first: it tells us n
     try:
@@ -206,7 +234,8 @@ def validate(spec):
 
     if n is not None:
         if n > MAX_AGENTS:
-            err("agents", f"{n} agents needs {16 * 2 ** n / 2 ** 30:.1f} GiB per statevector "
+            size = f"{2.0 ** (n - 26):.1f} GiB" if n < 100 else "more memory than exists"
+            err("agents", f"{n} agents needs {size} per statevector "
                           f"(16 * 2^n bytes); limit is {MAX_AGENTS}")
         elif n > DEMO_AGENTS:
             warns.append(f"{n} agents: fine offline, slow for a live demo (> {DEMO_AGENTS})")

@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 out/
+qecon_src/
+.claude/

@@ -61,6 +61,8 @@ class BanksPlugin(EconPlugin):
     state_names = ("solvent", "insolvent")
     headline = "fraction_failed"
     headline_label = "Fraction of banks insolvent"
+    extra_fields = ("capital_buffer",)
+    extra_network = ("holdings",)
     defaults = {
         "network": {"J_scale": 1.0, "min_coupling": 0.2},
         "fields": {"regulatory_min": 7.0, "kappa": 0.1,
@@ -84,7 +86,7 @@ class BanksPlugin(EconPlugin):
         if not isinstance(hold, list) or not hold:
             err("network.holdings", "must be a non-empty list of [holder, issuer, fraction]")
         else:
-            C = np.zeros((n, n))
+            column_sums = {}     # not a dense matrix: n has not been size-checked yet
             seen = set()
             ok = True
             for k, row in enumerate(hold):
@@ -114,9 +116,9 @@ class BanksPlugin(EconPlugin):
                     err(where, f"duplicate pair ({a}, {b})")
                     ok = False
                 seen.add((a, b))
-                C[a, b] = f
+                column_sums[b] = column_sums.get(b, 0.0) + f
             if ok:
-                for j, s in enumerate(C.sum(axis=0)):
+                for j, s in sorted(column_sums.items()):
                     if s >= 1:
                         err("network.holdings",
                             f"column {j} sums to {s:.3f}; must be < 1 "

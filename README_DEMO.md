@@ -1,6 +1,25 @@
 # Live demo & hardware (Person 4 workstream)
 
-## Run the demo
+There are two frontends over one backend. Both call `demo.server.api_run`, so levers, counterfactuals and hardware matching are the same code.
+
+| Frontend | Use it for | Run |
+|---|---|---|
+| Streamlit app (`demo/streamlit_app.py`) | The public link | `streamlit run demo/streamlit_app.py` |
+| Hand-built web demo (`demo/web/`) | On stage: works offline, no CDN | `python -m demo.server` |
+
+## Deploy to Streamlit Community Cloud
+
+1. Sign in at [share.streamlit.io](https://share.streamlit.io) with the GitHub account that administers this repo.
+2. Choose **Create app**, then deploy from the repo.
+3. Set the repository to `ShyZen15/Quantum-larpers`, pick the branch, and set the main file path to `demo/streamlit_app.py`.
+4. Under **Advanced settings**, choose Python 3.13 if it's offered. That's the version this was tested on.
+5. Press **Deploy**.
+
+Cloud reads `demo/requirements.txt` first because it sits next to the entrypoint, so it installs only what the app needs. `.streamlit/config.toml` stays at the repo root, as Cloud requires.
+
+Measured in a clean environment built from that file: 189 MB peak memory, against Cloud's published 690 MB–2.7 GB range. Apps sleep after 12 hours without traffic, so open the link before you need it. The spec editor has tighter limits than the command line (14 agents, 61 time points, t ≤ 30, 600 Trotter steps), because everyone shares one small machine.
+
+## Run the hand-built web demo
 
 ```bash
 pip install -r requirements.txt

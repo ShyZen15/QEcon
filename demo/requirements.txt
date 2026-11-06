@@ -1,0 +1,9 @@
+# Streamlit Community Cloud reads this file first because it sits next to the entrypoint.
+# Only what demo/streamlit_app.py imports. The full set is in the root requirements.txt.
+qiskit==2.6.2
+numpy
+scipy
+networkx
+pyyaml
+plotly
+streamlit

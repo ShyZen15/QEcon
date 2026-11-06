@@ -3,9 +3,10 @@
     python -m demo.server              # -> http://localhost:8501
     python -m demo.server --port 9000
 
-Standard library only (no Flask/Streamlit). Everything runs on the local statevector
-simulator, so the demo cannot fail on stage. Hardware points (results/hardware/*.json)
-are attached to a run when their spec hash matches the current settings.
+Standard library only (no Flask). demo/streamlit_app.py calls api_run too, so both demos
+share one path. Everything runs on the local statevector simulator, so the demo cannot
+fail on stage. Hardware points (results/hardware/*.json) are attached to a run when their
+spec hash matches the current settings.
 """
 import argparse
 import json
