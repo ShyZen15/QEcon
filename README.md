@@ -11,7 +11,7 @@ H = −Σ J_ij Z_i Z_j  −  Σ h_i Z_i  −  Σ Γ_i X_i
 
 Each agent (a bank, a firm, a taxpayer) is a qubit: |0⟩ = solvent / hold / comply, |1⟩ = insolvent / raise price / evade. Exposures and imitation become ZZ couplings, and policy levers become fields. The transverse field Γ (uncertainty) is the one ingredient that makes the model quantum: at Γ = 0 every term commutes and nothing moves.
 
-**What we claim, and what we don't.** We claim a working, validated compiler from a domain spec to a circuit. For this coherent model, exact classical simulation needs 16·2ⁿ bytes, while the circuit cost grows linearly with the number of interactions. We do **not** claim better economic forecasts, a speedup over classical econophysics (those models are classical Monte Carlo), or that people or economies are physically quantum. The full list is in `SLIDES_ISHA.md` → "What we do NOT claim".
+**What we claim.** We claim a working, validated compiler from a domain spec to a circuit. Classical Monte Carlo models track one definite state per replica, so they stay light on memory, but they don't simulate this coherent model. Simulating it exactly on a classical computer needs 16·2ⁿ bytes, so memory grows exponentially with the number of agents, while the circuit cost grows linearly with the number of interactions.
 
 ## The pipeline
 
